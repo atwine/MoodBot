@@ -6,6 +6,10 @@
 #models:
 #  url: http://my-server.com/models/default_core@latest
 #  wait_time_between_pulls:  10   # [optional](default: 100)
+models:
+  url: ${RASA_MODEL_SERVER}
+  token: ${RASA_X_TOKEN}
+  wait_time_between_pulls: 10
 
 # Server which runs your custom actions.
 # https://rasa.com/docs/rasa/custom-actions
@@ -25,7 +29,12 @@ action_endpoint:
 #    db: <number of your database within redis, e.g. 0>
 #    password: <password used for authentication>
 #    use_ssl: <whether or not the communication is encrypted, default false>
-
+lock_store:
+  type: "redis"
+  url: rasax-redis-master
+  port: 6379
+  password: ${REDIS_PASSWORD}
+  db: 1
 #tracker_store:
 #    type: mongod
 #    url: <url to your mongo instance, e.g. mongodb://localhost:27017>
@@ -35,12 +44,33 @@ action_endpoint:
 
 # Event broker which all conversation events should be streamed to.
 # https://rasa.com/docs/rasa/event-brokers
-
+tracker_store:
+  type: sql
+  dialect: "postgresql"
+  url: rasax-postgresql
+  port: 5432
+  username: postgres
+  password: ${DB_PASSWORD}
+  db: ${DB_DATABASE}
+  login_db: rasa
 #event_broker:
 #  url: localhost
 #  username: username
 #  password: password
 #  queue: queue
+event_broker:
+  type: "pika"
+  url: "rasax-rabbit"
+  username: "user"
+  password: ${RABBITMQ_PASSWORD}
+  port: 5672
+  queues:
+  - ${RABBITMQ_QUEUE}
 
-rasa:
-  url: http://rasax-rasa-x-rasa-x.rasax.svc:5002/api
+cache:
+  type: "redis"
+  url: rasax-redis-master
+  port: 6379
+  password: ${REDIS_PASSWORD}
+  db: 2
+  key_prefix: "rasax_cache"
